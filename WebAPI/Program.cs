@@ -17,6 +17,27 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DbpruebaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CadenaSQL")));
 
+builder.Services.AddSingleton<Utilidades>();
+
+builder.Services.AddAuthentication(config =>
+{
+    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(config =>
+{
+    config.RequireHttpsMetadata = false;
+    config.SaveToken = true;
+    config.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = false, // validar que aplicaciones externas  puedan utilizar nuestra url
+        ValidateAudience = false,  // validar quienes pueden acceder
+        ValidateLifetime = true, // validar tiempo de vida del token
+        ClockSkew = TimeSpan.Zero, // evitar variaciones de tiempo
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +47,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
