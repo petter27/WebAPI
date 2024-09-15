@@ -38,6 +38,17 @@ builder.Services.AddAuthentication(config =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NewPolicy", app =>
+    {
+        app.AllowAnyOrigin() // permitir cualquier origen
+        .AllowAnyHeader() // cualquier cabecera
+        .AllowAnyMethod(); // cualquier metodo
+
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,6 +58,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("NewPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
